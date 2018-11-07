@@ -3,6 +3,7 @@ package cn.merryyou.blockchain;
 import java.math.BigInteger;
 import java.util.Random;
 
+import cn.merryyou.blockchain.utils.JsonUtil;
 //import bcp.xianmen;
 import util.pp_para;
 
@@ -44,7 +45,7 @@ public class NoobChain {
     public static ArrayList<Block> blockchain = new ArrayList<Block>();
     public static HashMap<String,TransactionOutput> UTXOs = new HashMap<String,TransactionOutput>();
 
-    public static int difficulty = 3;
+    public static int difficulty = 5;
     public static BigInteger minimumTransaction = new BigInteger("0");
     public static Wallet walletA;
     public static Wallet walletB;
@@ -62,10 +63,11 @@ public class NoobChain {
 		BigInteger a= new BigInteger(2*bitlength,new Random());
 		a=a.mod(PP.n2);
 		sk=a;
+		System.out.println("\n----------Generate new <sk,pk> pair.---------\n");
 		System.out.println("sk is "+a);
 		BigInteger h=PP.g.modPow(sk, PP.n2);
 		pk=h;
-		System.out.println("pk is "+h);
+		System.out.println("pk is "+h+"\n");
 			
 	}
 	public static void Encryption(BigInteger pk,BigInteger m,pp_para PP)
@@ -111,6 +113,7 @@ public class NoobChain {
     	try {
             //创建Socket对象
             Socket socket=new Socket("localhost",8889);
+            System.out.println("\n----------Establish a connection with the server.---------\n");
 //            System.out.println(socket.isConnected()?"chengong":"shibai");
             
             //根据输入输出流和服务端连接
@@ -134,8 +137,9 @@ public class NoobChain {
             oos.flush();
             
             ObjectInputStream in=new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
-          
+            
             PP = (pp_para) in.readObject();
+            System.out.println("\n----------Security parameters PP have been received！----------");
       
 /*			try {
 				pp_para PP=(pp_para)in.readObject();
@@ -160,9 +164,9 @@ public class NoobChain {
         }
     	
     	KetGeneration(PP);
-    	BigInteger m=new BigInteger("11111111111111111");
-    	Encryption(pk,m,PP);
-    	Decryption(sk,PP,a,b);
+//    	BigInteger m=new BigInteger("11111111111111111");
+//    	Encryption(pk,m,PP);
+//    	Decryption(sk,PP,a,b);
     	
     	
     	//add our blocks to the blockchain ArrayList:
@@ -175,13 +179,21 @@ public class NoobChain {
 
         //create genesis transaction, which sends 100 NoobCoin to walletA:
         BigInteger genesisBalance = new BigInteger("100");
+//        Encryption(pk,genesisBalance,PP);
+//        BigInteger genesisBalance2 = new BigInteger("40");
+//        Encryption(pk,genesisBalance2,PP);
+//        BigInteger genesisBalance3 = new BigInteger("60");
+//        Encryption(pk,genesisBalance3,PP);
+//        
+        
+        
         genesisTransaction = new Transaction(coinbase.publicKey, walletA.publicKey, genesisBalance, null);
         genesisTransaction.generateSignature(coinbase.privateKey);	 //manually sign the genesis transaction
         genesisTransaction.transactionId = "0"; //manually set the transaction id
         genesisTransaction.outputs.add(new TransactionOutput(genesisTransaction.reciepient, genesisTransaction.value, genesisTransaction.transactionId)); //manually add the Transactions Output
         UTXOs.put(genesisTransaction.outputs.get(0).id, genesisTransaction.outputs.get(0)); //its important to store our first transaction in the UTXOs list.
 
-        System.out.println("Creating and Mining Genesis block... ");
+        System.out.println("\nCreating and Mining Genesis block... ");
         Block genesis = new Block("0");
         genesis.addTransaction(genesisTransaction);
         addBlock(genesis);
@@ -197,6 +209,12 @@ public class NoobChain {
         BigInteger block1Send = new BigInteger("40");
         block1.addTransaction(walletA.sendFunds(walletB.publicKey, block1Send));
         addBlock(block1);
+        
+        
+        
+//        System.out.println(JsonUtil.toJson(block1));
+        
+        
 //        System.out.println("\nWalletA's balance is: " + walletA.getBalance());
 //        System.out.println("WalletB's balance is: " + walletB.getBalance());
         System.out.println("\nWalletA's balance is: ");
@@ -221,7 +239,11 @@ public class NoobChain {
         Encryption(pk,walletB.getBalance(),PP);
         Decryption(sk,PP,a,b);
 
-        Block block3 = new Block(block2.hash);
+        
+//        System.out.println(JsonUtil.toJson(block2));
+        
+        
+        Block block3 = new Block(block1.hash);
         System.out.println("\nWalletB is Attempting to send funds (20) to WalletA...");
         BigInteger block3Send = new BigInteger("20");
         block3.addTransaction(walletB.sendFunds( walletA.publicKey, block3Send));
@@ -234,6 +256,8 @@ public class NoobChain {
         Encryption(pk,walletB.getBalance(),PP);
         Decryption(sk,PP,a,b);
 
+        System.out.println(JsonUtil.toJson(block3));
+        
         isChainValid();
 
     }

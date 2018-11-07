@@ -1,6 +1,7 @@
 package cn.merryyou.blockchain;
 
 import cn.merryyou.blockchain.utils.StringUtil;
+import Main.RingSignatures;
 
 import java.math.BigInteger;
 import java.security.PrivateKey;
